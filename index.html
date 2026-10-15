@@ -16,13 +16,15 @@ canvas{position:fixed;left:0;top:0;z-index:1}
 #css{position:fixed;left:0;top:0;z-index:0;overflow:hidden}
 #sp{position:fixed;left:8px;bottom:calc(32px + env(safe-area-inset-bottom,0px));width:min(310px,calc(100vw - 16px));box-sizing:border-box;background:var(--panel);border:1px solid rgba(128,128,128,.4);border-radius:10px;padding:8px;z-index:3;font-size:12px}
 #sp .r{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}#sp input[type=range]{width:120px}
+#fp,#fs{display:none;position:fixed;top:calc(100px + env(safe-area-inset-top,0px));width:min(290px,calc(100vw - 16px));box-sizing:border-box;background:var(--panel);border:1px solid rgba(128,128,128,.4);border-radius:10px;padding:8px;z-index:3;font-size:12px;max-height:62vh;overflow:auto}
+#fp{left:8px}#fs{right:8px}#fp .r,#fs .r{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}#fp select,#fs select,#fs input{background:transparent;color:var(--fg);border:1px solid rgba(128,128,128,.4);border-radius:6px;padding:3px}
 #pn{display:none;position:fixed;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 16px));background:var(--panel);border:1px solid rgba(128,128,128,.4);border-radius:10px;padding:10px;z-index:3;font-size:13px}
 #pn textarea{width:100%;height:120px;box-sizing:border-box;font:12px monospace;background:transparent;color:var(--fg);border:1px solid rgba(128,128,128,.4);border-radius:6px}
 #pn input{width:56px;background:transparent;color:var(--fg);border:1px solid rgba(128,128,128,.4);border-radius:6px;padding:3px}
 #pn .r{display:flex;gap:6px;align-items:center;margin-top:6px;flex-wrap:wrap}
 </style></head><body>
 <div id="ui">
-<button id="bCut">剖面(矮牆)</button><button id="bRoof">屋頂</button><button id="bLab" class="on">標籤</button><button id="bFur" class="on">家具</button><button id="bVent" class="on">通風</button><button id="bMove">移動家具</button><button id="bRot">旋轉</button><button id="bOpenAll">門窗全開</button><button id="bCloseAll">門窗全關</button><button id="bPaste">貼 HTML 到表面</button><button id="bAct">互動模式</button><button id="bTop">俯視</button><button id="bIso">斜視</button>
+<button id="bCut">剖面(矮牆)</button><button id="bRoof">屋頂</button><button id="bLab" class="on">標籤</button><button id="bFur" class="on">家具</button><button id="bVent" class="on">通風</button><button id="bMove">移動家具</button><button id="bRot">旋轉</button><button id="bFlip">翻轉門向</button><button id="bHinge">換鉸鍊側</button><button id="bBg">九宮</button><button id="bFs">風水指點</button><button id="bOpenAll">門窗全開</button><button id="bCloseAll">門窗全關</button><button id="bPaste">貼 HTML 到表面</button><button id="bAct">互動模式</button><button id="bTop">俯視</button><button id="bIso">斜視</button>
 </div>
 <div id="pn"><b>貼上 HTML 到點選的表面</b><textarea id="ta"></textarea><div class="r">寬<input id="iw" type="number" step="0.1" value="2">m 高<input id="ih" type="number" step="0.1" value="1">m</div><div class="r"><button id="bApply">套用</button><button id="bDel">刪除</button><button id="bClose">關閉</button></div><div style="opacity:.65;margin-top:6px">可含 input / button / 連結 / inline onclick。貼好後開「互動模式」才能操作面板（此時無法旋轉）。點已貼的面板可再編輯。</div></div>
 <div id="sp"><div class="r">☀️ 時間 <input id="hr" type="range" min="6" max="19" step="0.05" value="14"><button id="bPlay">▶</button></div><div class="r"><span id="hv"></span></div>
@@ -30,6 +32,10 @@ canvas{position:fixed;left:0;top:0;z-index:1}
 <div class="r">💨 風向(來自) <input id="wd" type="range" min="0" max="359" value="225"><span id="wdv"></span></div>
 <div class="r">風速 <input id="ws" type="range" min="0.3" max="4" step="0.1" value="1.5"><span id="wsv"></span></div>
 <div style="opacity:.65;margin-top:4px">粒子：藍=低處冷空氣，橙=室內受熱上升（對流）。簡化模擬，非 CFD。</div></div>
+<div id="fp"><b>家具 / 燈飾</b><div class="r"><select id="fcat"></select></div><div class="r"><button id="fAdd">新增</button><button id="fRep">替換選取</button><button id="fDup">複製</button><button id="fDel">刪除</button></div>
+<div class="r">顏色 <input id="fcol" type="color" value="#8d6e4a"><button id="fPaint">改色</button><button id="fLamp">開/關燈</button></div>
+<div style="opacity:.65;margin-top:4px">點家具(黃框)選取後可替換、複製、刪除、改色。燈飾：把時間拉到 18:30 後看夜景；未選燈時「開/關燈」控制全部。</div></div>
+<div id="fs"><b>風水指點</b><div class="r">出生年 <input id="by" type="number" value="1985" style="width:72px"> <select id="bg"><option value="m">男</option><option value="f">女</option></select><button id="bFsGo">分析</button></div><div id="fsout"></div></div>
 <div id="hint">拖曳旋轉・滾輪/雙指縮放・點門/窗開關・「移動家具」後拖曳家具、R 旋轉</div>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -52,25 +58,30 @@ function box(x0,x1,z0,z1,h0,h1,mat,g){
   const m=new THREE.Mesh(new THREE.BoxGeometry((x1-x0)/S,h1-h0,(z1-z0)/S),mat);
   m.position.set((X(x0)+X(x1))/2,(h0+h1)/2,(Z(z0)+Z(z1))/2);(g||scene).add(m);return m;}
 const walls=new THREE.Group();scene.add(walls);const solids=[];
-const openings=[],mDoor=M(0x9a6b3f);
+let selOp=null;const openings=[],mDoor=M(0x9a6b3f);
 function setOp(op,open,instant){
   op.open=open;
-  for(const l of op.leaves){l.tgt=open?l.sign*1.4:0;if(instant)l.cur=l.tgt;l.g.rotation.y=l.base+l.cur;}
+  for(const l of op.leaves){l.tgt=open?op.flip*l.sign*1.4:0;if(instant)l.cur=l.tgt;l.g.rotation.y=l.base+l.cur;}
   const i=solids.indexOf(op.rect);
   if(open&&i>=0)solids.splice(i,1);
   if(!open&&i<0)solids.push(op.rect);
 }
-function mkOp(d,f,s,e,ty){
-  const wm=(e-s)/S,n=wm>1.5?2:1,len=wm/n,isD=ty=='d',h0=isD?0:.9,hh=2.1-h0;
-  const op={ty,leaves:[],rect:d=='h'?[s,e,f-8,f+8]:[f-8,f+8,s,e],open:!isD};
+function build(op){
+  for(const l of op.leaves)scene.remove(l.g);op.leaves=[];
+  const{d,f,s,e,ty}=op,wm=(e-s)/S,n=wm>1.5?2:1,len=wm/n,isD=ty=='d',h0=isD?0:.9,hh=2.1-h0;
   for(let k=0;k<n;k++){
-    const g=new THREE.Group(),st=k==0,hp=st?s:e;
+    const g=new THREE.Group(),st=(k==0)!==op.hs,hp=st?s:e;
     g.position.set(d=='h'?X(hp):X(f),h0,d=='h'?Z(f):Z(hp));
     const m=new THREE.Mesh(new THREE.BoxGeometry(len,hh,isD?.05:.03),isD?mDoor:mGlass);
-    m.position.set((st?1:-1)*len/2,hh/2,0);m.userData.op=op;g.add(m);scene.add(g);
+    m.position.set((st?1:-1)*len/2,hh/2,0);m.userData.op=op;m.castShadow=isD;g.add(m);scene.add(g);
     op.leaves.push({g,base:d=='h'?0:-Math.PI/2,sign:st?1:-1,cur:0,tgt:0});
   }
-  openings.push(op);setOp(op,op.open,true);
+  setOp(op,op.open,true);
+}
+function mkOp(d,f,s,e,ty,cfg){
+  const isD=ty=='d',op={d,f,s,e,ty,leaves:[],rect:d=='h'?[s,e,f-8,f+8]:[f-8,f+8,s,e],open:!isD,flip:cfg&&cfg.flip||1,hs:!!(cfg&&cfg.hs),
+    cx:d=='h'?(X(s)+X(e))/2:X(f),cz:d=='h'?Z(f):(Z(s)+Z(e))/2};
+  openings.push(op);build(op);
 }
 
 // dir 'h': along x at y=f ; 'v': along y at x=f
@@ -79,12 +90,12 @@ function wall(d,f,a,b,ops=[]){
   const seg=(s,e,h0,h1,mat=mWall)=>{ if(e-s<1)return; if(h0==0&&h1==H)solids.push(d=='h'?[s,e,f-t,f+t]:[f-t,f+t,s,e]);
     d=='h'?box(s,e,f-t,f+t,h0,h1,mat,walls):box(f-t,f+t,s,e,h0,h1,mat,walls);};
   let c=a;ops.sort((p,q)=>p[0]-q[0]);
-  for(const [s,e,ty] of ops){
+  for(const [s,e,ty,cfg] of ops){
     seg(c,s,0,H);
     if(ty=='d'){seg(s,e,2.1,H);}
     else{seg(s,e,0,.9);seg(s,e,2.1,H);
       }
-    mkOp(d,f,s,e,ty);c=e;}
+    mkOp(d,f,s,e,ty,cfg);c=e;}
   seg(c,b,0,H);
 }
 // ground, garden, floors
@@ -99,21 +110,21 @@ fl(734,1137,424,637,0xf0e0c0);
 // walls
 wall('h',424,726,1408);
 wall('h',1727,726,1408,[[876,1034,'d'],[1085,1117,'w']]);
-wall('v',734,416,1735,[[455,505,'w'],[530,610,'d'],[647,715,'w'],[848,948,'w'],[1128,1272,'w'],[1614,1720,'w']]);
+wall('v',734,416,1735,[[455,505,'w'],[530,610,'d',{hs:1}],[647,715,'w'],[848,948,'w'],[1128,1272,'w'],[1614,1720,'w']]);
 wall('v',1400,416,1735);
-wall('v',1137,424,757,[[666,748,'d']]);
+wall('v',1137,424,757,[[666,748,'d',{hs:1}]]);
 wall('h',756,1137,1408,[[1263,1365,'w']]);
 wall('v',1228,756,968,[[766,945,'w']]);
 wall('h',960,1137,1400,[[1263,1365,'w']]);
-wall('v',1137,960,1166);
-wall('h',1238,1066,1400,[[1073,1145,'d'],[1185,1267,'d']]);
+wall('v',1137,960,1166);wall('h',1158,1137,1200);wall('v',1192,1158,1246,[[1166,1232,'d',{hs:1}]]);
+wall('h',1238,1066,1400,[[1073,1145,'d',{flip:-1}]]);
 wall('v',1066,1238,1735);
 wall('h',1597,1195,1400);
 wall('v',1195,1597,1727,[[1630,1700,'d']]);
 wall('h',637,734,913);
 wall('v',905,637,768,[[647,702,'d']]);
 wall('h',760,734,990);
-wall('v',984,760,1050,[[955,1030,'d']]);
+wall('v',984,760,1050,[[955,1030,'d',{hs:1,flip:-1}]]);
 wall('h',1042,734,992);
 // porch columns + roof
 for(const [x,z] of [[729,2113],[1391,2113]])box(x-18,x+18,z-18,z+18,0,H,M(0xdadde2));
@@ -146,21 +157,21 @@ tog('bLab',v=>labs.visible=v);
 document.getElementById('bTop').onclick=topView;document.getElementById('bIso').onclick=isoView;
 addEventListener('resize',()=>{cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();ren.setSize(innerWidth,innerHeight);crn.setSize(innerWidth,innerHeight)});
 // ---- 家具 ----
-const furn=new THREE.Group();scene.add(furn);let cur=furn;function G(){cur=new THREE.Group();furn.add(cur);}
+const furn=new THREE.Group();scene.add(furn);let cur=furn;function G(k){cur=new THREE.Group();if(k)cur.userData.kind=k;furn.add(cur);}
 const MC={},mat=c=>MC[c]||(MC[c]=M(c));
 const WD=0x8d6e4a,WH=0xf5f5f5,WR=0xc9b79c,SF=0x7a8ea3;
 function F(cx,cz,w,d,h,c,y0=0){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(X(cx),.05+y0+h/2,Z(cz));cur.add(m);}
 function Cy(cx,cz,r,h,c,y0=0){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,16),mat(c));m.position.set(X(cx),.05+y0+h/2,Z(cz));cur.add(m);}
 function Sp(cx,cz,r,c,y){const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,10),mat(c));m.position.set(X(cx),y,Z(cz));cur.add(m);}
 function bed(cx,cz,w,d,hd){
-  G();F(cx,cz,w,d,.3,WD);F(cx,cz,w-.1,d-.1,.22,0xf4f1ea,.3);
+  G('bed');cur.userData.hd=hd;F(cx,cz,w,d,.3,WD);F(cx,cz,w-.1,d-.1,.22,0xf4f1ea,.3);
   if(hd=='N'){F(cx,cz+d*.22*S,w-.05,d*.5,.04,0x9bb5c9,.52);F(cx,cz-d/2*S-4,w+.1,.08,1.0,WD);
     for(const k of[-1,1])F(cx+k*w*.25*S,cz-(d/2-.25)*S,.5,.3,.12,0xffffff,.52);}
   else{F(cx-d*0+(-w*.22*S),cz,w*.5,d-.05,.04,0x9bb5c9,.52);F(cx+w/2*S+4,cz,.08,d+.1,1.0,WD);
     for(const k of[-1,1])F(cx+(w/2-.25)*S,cz+k*d*.25*S,.3,.5,.12,0xffffff,.52);}
 }
 function chair(cx,cz,s){G();F(cx,cz,.42,.42,.05,WD,.43);F(cx,cz,.06,.06,.43,WD);F(cx+s*18,cz,.05,.42,.45,WD,.48);}
-function toilet(cx,cz){G();F(cx,cz,.4,.6,.4,WH);F(cx,cz-24,.4,.18,.35,WH,.4);}
+function toilet(cx,cz){G('toilet');F(cx,cz,.4,.6,.4,WH);F(cx,cz-24,.4,.18,.35,WH,.4);}
 // 客廳 / 餐廳
 G();F(880,1480,2.0,2.8,.02,0x9a5b4f);
 G();F(782,1480,.9,2.2,.45,SF);F(752,1480,.2,2.2,.9,SF);F(782,1390,.9,.15,.65,SF);F(782,1570,.9,.15,.65,SF);
@@ -171,9 +182,9 @@ G();F(781,1704,.9,.35,1.0,WD);
 G();F(900,1135,1.0,1.8,.05,WD,.72);F(900,1135,.5,1.2,.7,WD);
 for(const z of[1083,1135,1187]){chair(831,z,-1);chair(969,z,1);}
 // 廚房
-G();F(940,458,4.0,.6,.9,0xe4e0d8);F(940,458,4.0,.62,.04,0x555555,.9);F(880,458,.6,.5,.02,0x222222,.94);F(1010,458,.7,.45,.02,0xc0c4c8,.94);
+G('counter');F(940,458,4.0,.6,.9,0xe4e0d8);F(940,458,4.0,.62,.04,0x555555,.9);F(880,458,.6,.5,.02,0x222222,.94);F(1010,458,.7,.45,.02,0xc0c4c8,.94);
 G();F(940,445,4.0,.35,.7,0xd8d2c4,1.5);
-G();F(1100,600,.7,.7,1.8,0xcfd4da);
+G('fridge');F(1100,600,.7,.7,1.8,0xcfd4da);
 G();F(960,545,2.0,.9,.9,0xd8d2c4);F(960,545,2.1,1.0,.04,0x444444,.9);
 for(const x of[900,960,1020]){G();Cy(x,598,.2,.02,WD,.62);Cy(x,598,.04,.6,0x333333);}
 // 臥室
@@ -270,7 +281,7 @@ const vis=o=>{while(o){if(!o.visible)return false;o=o.parent;}return true;};
 const ptr=e=>{m2.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);rc.setFromCamera(m2,cam);};
 const pieceOf=o=>{while(o&&o.parent&&o.parent!==furn)o=o.parent;return o&&o.parent===furn?o:null;};
 const firstHit=()=>rc.intersectObjects(scene.children,true).find(i=>i.object.isMesh&&i.object.parent!==roof&&!i.object.userData.decal&&vis(i.object));
-tog('bMove',v=>{moving=v;if(v){editing=false;pn.style.display='none';cv.style.pointerEvents='auto';bPaste.classList.remove('on');bAct.classList.remove('on');}else{bh.visible=false;selG=null;}});
+tog('bMove',v=>{moving=v;fp.style.display=v?'block':'none';if(v){editing=false;pn.style.display='none';cv.style.pointerEvents='auto';bPaste.classList.remove('on');bAct.classList.remove('on');}else{bh.visible=false;selG=null;}});
 ren.domElement.addEventListener('pointerdown',e=>{
   if(!moving||editing)return;
   ptr(e);const h=firstHit();if(!h)return;
@@ -289,10 +300,134 @@ addEventListener('keydown',e=>{if((e.key=='r'||e.key=='R')&&!/INPUT|TEXTAREA/.te
 ren.domElement.addEventListener('pointerup',e=>{
   if(editing||moving||!dn||Math.hypot(e.clientX-dn[0],e.clientY-dn[1])>5)return;
   ptr(e);const h=firstHit();
-  if(h&&h.object.userData.op){const op=h.object.userData.op;setOp(op,!op.open);}
+  if(h&&h.object.userData.op){const op=h.object.userData.op;selOp=op;setOp(op,!op.open);}
 });
+document.getElementById('bFlip').onclick=()=>{if(selOp){selOp.flip*=-1;setOp(selOp,selOp.open);}};
+document.getElementById('bHinge').onclick=()=>{if(selOp){selOp.hs=!selOp.hs;build(selOp);}};
 document.getElementById('bOpenAll').onclick=()=>openings.forEach(o=>setOp(o,true));
 document.getElementById('bCloseAll').onclick=()=>openings.forEach(o=>setOp(o,false));
+// ---- 家具/燈飾目錄、替換 ----
+const fp=document.getElementById('fp'),fcat=document.getElementById('fcat');
+function Co(cx,cz,rt,rb,h,c,y0=0){const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,16),mat(c));m.position.set(X(cx),.05+y0+h/2,Z(cz));cur.add(m);}
+const f=(ox,oz,w,d,h,c,y0)=>F(726+ox*S,416+oz*S,w,d,h,c,y0);
+const cy=(r,h,c,y0)=>Cy(726,416,r,h,c,y0),co=(rt,rb,h,c,y0)=>Co(726,416,rt,rb,h,c,y0);
+function Lt(oy,I,dist){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(.07,10,8),new THREE.MeshBasicMaterial({color:0xffe9b0}));
+  m.position.set(0,oy+.05,0);m.userData.bulb=true;cur.add(m);
+  const L=new THREE.PointLight(0xffd9a0,I||.8,dist||5,1.5);L.position.copy(m.position);cur.add(L);
+  cur.userData.light=L;cur.userData.bulb=m;cur.userData.on=true;}
+const CAT={
+'三人沙發':()=>{G('sofa');f(0,0,.9,2.2,.45,SF);f(-.35,0,.2,2.2,.9,SF);f(0,-1.02,.9,.15,.65,SF);f(0,1.02,.9,.15,.65,SF);},
+'單人沙發':()=>{G('sofa');f(0,0,.8,.8,.42,SF);f(.4,0,.15,.8,.85,SF);},
+'茶几':()=>{G();f(0,0,.6,1.2,.4,WD);},
+'電視櫃+電視':()=>{G();f(0,0,.4,1.8,.5,WD);f(.1,0,.05,1.2,.7,0x111111,.55);},
+'餐桌':()=>{G();f(0,0,1.0,1.8,.05,WD,.72);f(0,0,.5,1.2,.7,WD);},
+'餐椅':()=>chair(726,416,-1),
+'單人床':()=>bed(726,416,1.0,1.9,'N'),'雙人床':()=>bed(726,416,1.5,2.0,'N'),'大床':()=>bed(726,416,2.0,1.9,'N'),
+'床頭櫃':()=>{G();f(0,0,.45,.45,.5,WD);},
+'衣櫃':()=>{G();f(0,0,1.6,.6,2.1,WR);},
+'書桌+椅':()=>{G();f(0,0,1.2,.6,.04,WD,.72);f(-.5,0,.05,.5,.72,WD);f(.5,0,.05,.5,.72,WD);f(0,.65,.4,.4,.45,WD);},
+'書櫃':()=>{G();f(0,0,.9,.35,1.9,WD);},
+'梳妝台':()=>{G();f(0,0,.45,1.2,.8,WD);},
+'鞋櫃':()=>{G();f(0,0,.9,.35,1.0,WD);},
+'冰箱':()=>{G('fridge');f(0,0,.7,.7,1.8,0xcfd4da);},
+'流理台(2m)':()=>{G('counter');f(0,0,2,.6,.9,0xe4e0d8);f(0,0,2,.62,.04,0x555555,.9);f(-.4,0,.6,.5,.02,0x222222,.94);},
+'馬桶':()=>toilet(726,416),
+'洗手台':()=>{G();f(0,0,.6,.45,.85,WH);},
+'淋浴盤':()=>{G();f(0,0,1.0,.8,.06,0xd9e6ee);},
+'地毯':()=>{G();f(0,0,2,2.6,.02,0x9a5b4f);},
+'盆栽':()=>{G();cy(.25,.4,0xa0522d);Sp(726,416,.35,0x3c8d40,.9);},
+'汽車':()=>{G();f(0,0,1.8,4.4,.6,0xb0b8c4,.3);f(0,.1,1.6,2.2,.5,0x5a6a7a,.9);for(const[a,b]of[[-1,-1],[1,-1],[-1,1],[1,1]]){const m=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.22,16),mat(0x222222));m.rotation.z=Math.PI/2;m.position.set(a*.95,.35,b*1.4);cur.add(m);}},
+'樹':()=>{G();cy(.12,2,0x6b4a2b);Sp(726,416,1,0x4c9a4a,2.8);},
+'💡吊燈':()=>{G('lamp');cy(.01,.7,0x333333,2.05);co(.08,.3,.2,0xf2efe6,1.85);Lt(1.86,.9,6);},
+'💡吸頂燈':()=>{G('lamp');cy(.3,.06,0xffffff,2.72);Lt(2.68,.8,5);},
+'💡立燈':()=>{G('lamp');cy(.18,.03,0x333333);cy(.02,1.5,0x333333);co(.12,.22,.3,0xf2efe6,1.45);Lt(1.55,.8,4.5);},
+'💡檯燈(放桌面)':()=>{G('lamp');cy(.1,.03,0x333333,.5);cy(.015,.3,0x333333,.5);co(.08,.16,.2,0xf2efe6,.78);Lt(.88,.5,3);}};
+for(const k in CAT){const o=document.createElement('option');o.textContent=k;fcat.appendChild(o);}
+function norm(g){const c=new THREE.Box3().setFromObject(g).getCenter(new THREE.Vector3());c.y=0;g.children.forEach(m=>m.position.sub(c));g.position.copy(c);}
+function addPiece(key,xm,zm,rot){
+  const n0=furn.children.length;CAT[key]();const gs=furn.children.slice(n0),g=gs[0];
+  for(const o of gs.slice(1)){[...o.children].forEach(m=>g.add(m));furn.remove(o);}
+  norm(g);g.position.x=xm;g.position.z=zm;g.rotation.y=rot||0;g.userData.key=key;
+  g.traverse(o=>{if(o.isMesh)o.castShadow=o.receiveShadow=true;});return g;}
+function lampSet(g,on){const L=g.userData.light;if(!L)return;L.visible=on;g.userData.on=on;g.userData.bulb.material.color.set(on?0xffe9b0:0x666666);}
+function pick(g){selG=g;bh.setFromObject(g);bh.visible=true;}
+function floorPt(){rc.setFromCamera(new THREE.Vector2(0,0),cam);const p=new THREE.Vector3();if(!rc.ray.intersectPlane(plane,p))p.set(C.x,0,C.z);
+  p.x=Math.round(Math.min(9,Math.max(-3,p.x))/.05)*.05;p.z=Math.round(Math.min(21,Math.max(0,p.z))/.05)*.05;return p;}
+document.getElementById('fAdd').onclick=()=>{const p=floorPt();pick(addPiece(fcat.value,p.x,p.z));};
+document.getElementById('fRep').onclick=()=>{if(!selG)return;const{x,z}=selG.position,r=selG.rotation.y;furn.remove(selG);pick(addPiece(fcat.value,x,z,r));};
+document.getElementById('fDup').onclick=()=>{if(!selG)return;const k=selG.userData.key;
+  const g=k?addPiece(k,selG.position.x+.5,selG.position.z+.5,selG.rotation.y):selG.clone(true);
+  if(!k){g.position.x+=.5;g.position.z+=.5;furn.add(g);}pick(g);};
+document.getElementById('fDel').onclick=()=>{if(selG){furn.remove(selG);selG=null;bh.visible=false;}};
+document.getElementById('fPaint').onclick=()=>{if(!selG)return;let best=null,bv=0;
+  selG.traverse(o=>{if(o.isMesh&&!o.userData.bulb){o.geometry.computeBoundingBox();const s=o.geometry.boundingBox.getSize(new THREE.Vector3()),v=s.x*s.y*s.z;if(v>bv){bv=v;best=o;}}});
+  if(best){best.material=best.material.clone();best.material.color.set(document.getElementById('fcol').value);}};
+document.getElementById('fLamp').onclick=()=>{
+  const ls=furn.children.filter(g=>g.userData.light);
+  if(selG&&selG.userData.light)lampSet(selG,!selG.userData.on);
+  else{const on=!ls.every(g=>g.userData.on);ls.forEach(g=>lampSet(g,on));}};
+// 預設燈飾
+[['💡吊燈',900,1135],['💡吊燈',960,545],['💡吸頂燈',880,1480],['💡吸頂燈',1268,600],['💡吸頂燈',860,900],['💡吸頂燈',1268,1100],
+ ['💡吸頂燈',1233,1480],['💡吸頂燈',1300,1660],['💡吸頂燈',812,700],['💡立燈',765,1360],['💡檯燈(放桌面)',1372,1322]]
+ .forEach(a=>addPiece(a[0],X(a[1]),Z(a[2])));
+
+// ---- 風水 ----
+const DIRN=['北','東北','東','東南','南','西南','西','西北'],TRI={1:'坎',2:'坤',3:'震',4:'巽',6:'乾',7:'兌',8:'艮',9:'離'};
+const GD={1:0,2:5,3:2,4:3,6:7,7:6,8:1,9:4},NAMES=['伏位','生氣','天醫','延年','禍害','五鬼','六煞','絕命'];
+const PAIR={1:[1,4,3,9,7,8,6,2],3:[3,9,1,4,2,6,8,7],4:[4,1,9,3,6,2,7,8],9:[9,3,4,1,8,7,2,6],2:[2,8,7,6,3,4,9,1],6:[6,7,8,2,4,3,1,9],7:[7,6,2,8,1,9,4,3],8:[8,2,6,7,9,1,3,4]};
+const bearing=(dx,dz)=>(Math.atan2(.7071*dx+.7071*dz,.7071*dx-.7071*dz)*180/Math.PI+360)%360;
+const sec=b=>Math.round(b/45)%8,cx0=X(1067),cz0=Z(1075);
+const secPx=(px,pz)=>sec(bearing(X(px)-cx0,Z(pz)-cz0));
+const ROOMS=[['大門',955,1727],['主臥',1233,1480],['臥室2',1268,600],['臥室3',855,900],['臥室4',1268,1100],['廚房',940,540],['浴室1',1300,1660],['浴室2',812,700]];
+function analyze(){
+  const yr=+document.getElementById('by').value,male=document.getElementById('bg').value=='m',o=[];
+  let gua=null,ds={};
+  if(yr>1900&&yr<2100){let s=[...String(yr)].reduce((a,b)=>a+ +b,0);while(s>9)s=[...String(s)].reduce((a,b)=>a+ +b,0);
+    gua=yr<2000?(male?11-s:4+s):(male?9-s:6+s);while(gua>9)gua-=9;while(gua<=0)gua+=9;if(gua==5)gua=male?2:8;
+    PAIR[gua].forEach((g2,i)=>ds[GD[g2]]=i);}
+  const R=(ok,t)=>o.push('<div style="margin-top:3px">'+(ok===true?'✅ ':ok===false?'⚠️ ':'• ')+t+'</div>');
+  R(null,'<b>坐向</b>：大門朝東南(巽)，坐西北(乾)。方位依平面圖北向箭頭換算。');
+  if(gua){R(null,'<b>命卦</b>：'+gua+'・'+TRI[gua]+'（'+([1,3,4,9].includes(gua)?'東四命':'西四命')+'）');
+    R(null,'<b>吉</b>：'+[1,2,3,0].map(i=>NAMES[i]+DIRN[GD[PAIR[gua][i]]]).join('、')+'<br><b>凶</b>：'+[4,5,6,7].map(i=>NAMES[i]+DIRN[GD[PAIR[gua][i]]]).join('、'));}
+  else R(null,'輸入出生年可得命卦吉凶方位。');
+  const st=(p,z)=>{const s=secPx(p,z);return[DIRN[s],gua!==null?ds[s]:null];};
+  for(const[n,p,z]of ROOMS){const[d,i]=st(p,z);const good=i!==null&&i<4;
+    let t=n+' 位於'+d+'方'+(i!==null?'（'+NAMES[i]+(good?'・吉':'・凶')+'）':'');
+    if(i===null)R(null,t);
+    else if(n=='大門'||/臥/.test(n))R(good,t+(good?'':'：宜把床頭/主要動線朝吉方補強'));
+    else if(n=='廚房')R(null,t+(good?'：灶位占吉方較可惜，灶口宜朝吉方':'：坐凶向吉，灶口朝吉方為佳'));
+    else R(!good,t+(good?'：廁所佔吉位，宜保持乾燥、門常關、加盆栽':'：壓凶位，合宜'));}
+  const near=(g)=>{let b=null,bd=1e9;const px=g.position.x*S+726,pz=g.position.z*S+416;for(const r of ROOMS){const d=Math.hypot(r[1]-px,r[2]-pz);if(d<bd){bd=d;b=r[0];}}return b;};
+  furn.children.filter(g=>g.userData.kind=='bed').forEach(g=>{
+    const th=g.rotation.y,hl=g.userData.hd=='E'?[1,0]:[0,-1],hx=hl[0]*Math.cos(th)+hl[1]*Math.sin(th),hz=-hl[0]*Math.sin(th)+hl[1]*Math.cos(th);
+    const s=sec(bearing(hx,hz)),i=gua!==null?ds[s]:null,nm=near(g)+'的床';
+    R(i===null?null:i<4,nm+'：床頭朝'+DIRN[s]+(i!==null?'（'+NAMES[i]+'）':'')+(i!==null&&i>=4?'，宜轉向吉方':''));
+    for(const op of openings){const vx=op.cx-g.position.x,vz=op.cz-g.position.z,al=vx*hx+vz*hz,lat=Math.abs(-vx*hz+vz*hx);
+      if(op.ty=='w'&&al>.6&&al<2.1&&lat<1.2)R(false,nm+'：床頭靠窗，宜移開或掛厚窗簾');
+      if(op.ty=='d'&&-al>1&&-al<3.3&&lat<.8)R(false,nm+'：床尾對門（腳對門），建議轉向或加屏風');}});
+  const dc=[X(955),Z(1700)];
+  if(!furn.children.some(g=>g.userData.light&&Math.hypot(g.position.x-dc[0],g.position.z-dc[1])<3.5))R(false,'大門內側(明堂)偏暗：建議在入口附近增設燈飾');
+  const se=furn.children.some(g=>g.userData.light&&secPx(g.position.x*S+726,g.position.z*S+416)==3);
+  R(se,'東南(巽・財位)方'+(se?'已有燈光，旺財':'無燈：可在東南角放燈或綠植'));
+  R(null,'<span style="opacity:.6">傳統文化參考，非科學依據；命卦以出生年簡算（未區分立春）。</span>');
+  document.getElementById('fsout').innerHTML=o.join('');
+}
+document.getElementById('bFsGo').onclick=analyze;
+tog('bFs',v=>{document.getElementById('fs').style.display=v?'block':'none';if(v)analyze();});
+// 九宮格疊圖
+const fsG=new THREE.Group();fsG.visible=false;scene.add(fsG);
+const BGU=[['乾','貴人','#d0d0d8'],['坎','事業','#7fb4ff'],['艮','知識','#c9a97a'],['兌','子女','#fff08a'],['中','健康','#f2d675'],['震','家庭','#8fd68f'],['坤','感情','#f4a6c0'],['離','名聲','#ff9c8a'],['巽','財運','#6fe0b8']];
+function spr(t1,t2,x,z,y){const c=document.createElement('canvas');c.width=256;c.height=128;const g=c.getContext('2d');g.fillStyle='rgba(255,255,255,.85)';g.fillRect(8,8,240,112);
+  g.textAlign='center';g.fillStyle='#222';g.font='bold 48px sans-serif';g.fillText(t1,128,64);g.font='36px sans-serif';g.fillText(t2,128,106);
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),depthTest:false}));s.scale.set(1.4,.7,1);s.position.set(x,y,z);s.renderOrder=9;fsG.add(s);}
+const CS=5.5,w2=(lx,lz)=>[cx0+.7071*lx-.7071*lz,cz0+.7071*lx+.7071*lz];
+BGU.forEach((b,i)=>{const lx=(i%3-1)*CS,lz=(Math.floor(i/3)-1)*CS,[wx,wz]=w2(lx,lz);
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(CS-.1,CS-.1),new THREE.MeshBasicMaterial({color:b[2],transparent:true,opacity:.38,depthWrite:false,side:THREE.DoubleSide}));
+  m.rotation.set(-Math.PI/2,0,0);m.rotateOnWorldAxis(new THREE.Vector3(0,1,0),-Math.PI/4);m.position.set(wx,.13,wz);m.raycast=()=>{};fsG.add(m);
+  spr(b[0],b[1],wx,wz,.6);});
+{const[nx,nz]=w2(0,-CS*1.5-1);spr('北 N','',nx,nz,.8);}
+tog('bBg',v=>fsG.visible=v);
 scene.traverse(o=>{if(o.isMesh&&o.material!==mGlass&&o.parent!==roof){o.castShadow=o.receiveShadow=true;}});
 
 // ---- CSS3DRenderer：可互動 HTML 面板 ----
